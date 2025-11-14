@@ -1,0 +1,1642 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini Quiz Hub </title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+  <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100%;
+            color: #ffffff;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+            animation: backgroundShift 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .shape {
+            position: absolute;
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 70%;
+            right: 10%;
+            animation-delay: 5s;
+        }
+
+        .shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 40%;
+            left: 80%;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-30px) rotate(120deg); }
+            66% { transform: translateY(20px) rotate(240deg); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .quiz-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            box-shadow: 
+                0 30px 60px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            padding: 50px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            animation: cardEntrance 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes cardEntrance {
+            0% {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .quiz-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, 
+                #ff6b6b 0%, 
+                #4ecdc4 20%, 
+                #45b7d1 40%, 
+                #96ceb4 60%, 
+                #feca57 80%, 
+                #ff9ff3 100%);
+            border-radius: 30px 30px 0 0;
+            animation: rainbowShift 3s ease-in-out infinite;
+        }
+
+        @keyframes rainbowShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .quiz-header {
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .quiz-title {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffffff, #f0f9ff, #e0f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 25px;
+            letter-spacing: -0.02em;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            animation: titleGlow 4s ease-in-out infinite;
+            position: relative;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { 
+                text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+                transform: scale(1);
+            }
+            50% { 
+                text-shadow: 0 0 50px rgba(255, 255, 255, 0.8);
+                transform: scale(1.02);
+            }
+        }
+
+        .welcome-text {
+            font-size: 1.4rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 30px;
+            font-weight: 400;
+            line-height: 1.6;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 30px;
+            margin-bottom: 50px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            height: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
+            height: 100%;
+            border-radius: 30px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0%;
+            position: relative;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.6);
+            animation: progressGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes progressGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.6); }
+            50% { box-shadow: 0 0 30px rgba(255, 107, 107, 0.9); }
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            text-align: center;
+            font-weight: 600;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .question-container {
+            margin-bottom: 50px;
+        }
+
+        .question-number {
+            font-size: 1.1rem;
+            color: #4ecdc4;
+            font-weight: 800;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            display: inline-block;
+            background: rgba(78, 205, 196, 0.2);
+            padding: 12px 20px;
+            border-radius: 25px;
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            backdrop-filter: blur(10px);
+            animation: questionPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes questionPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .question-text {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            border-left: 6px solid #4ecdc4;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 25px 35px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1.2rem;
+            color: #ffffff;
+            position: relative;
+            font-weight: 500;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .option:hover {
+            border-color: rgba(255, 255, 255, 0.6);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .option:hover::before {
+            left: 100%;
+        }
+
+        .option.selected {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #667eea;
+            color: #ffffff;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+            transform: translateY(-3px) scale(1.02);
+            animation: selectedPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes selectedPulse {
+            0%, 100% { box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4); }
+            50% { box-shadow: 0 20px 50px rgba(102, 126, 234, 0.6); }
+        }
+
+        .option.correct {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            border-color: #48bb78;
+            color: #ffffff;
+            animation: correctAnswer 0.6s ease-out;
+        }
+
+        @keyframes correctAnswer {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .option.incorrect {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+            border-color: #f56565;
+            color: #ffffff;
+            animation: incorrectShake 0.6s ease-out;
+        }
+
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 20px 30px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            font-size: 1.2rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 4px rgba(78, 205, 196, 0.2), 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .text-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 50px;
+            flex-wrap: wrap;
+            gap: 25px;
+        }
+
+        .btn {
+            padding: 18px 40px;
+            border: none;
+            border-radius: 20px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 50px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-primary:disabled {
+            background: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .timer {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 16px 30px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+            animation: timerPulse 2s infinite;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+        }
+
+        @keyframes timerPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 15px 40px rgba(255, 107, 107, 0.6);
+            }
+        }
+
+        .results-container {
+            text-align: center;
+        }
+
+        .score-display {
+            font-size: 5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffffff, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 50px 0;
+            text-shadow: 0 0 50px rgba(255, 255, 255, 0.5);
+            animation: scoreGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes scoreGlow {
+            0%, 100% { 
+                text-shadow: 0 0 50px rgba(255, 255, 255, 0.5);
+                transform: scale(1);
+            }
+            50% { 
+                text-shadow: 0 0 80px rgba(255, 255, 255, 0.8);
+                transform: scale(1.05);
+            }
+        }
+
+        .score-breakdown {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 40px 0;
+            backdrop-filter: blur(30px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .score-breakdown p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.3rem;
+            margin: 15px 0;
+            font-weight: 500;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .leaderboard {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 40px;
+            margin-top: 50px;
+            backdrop-filter: blur(30px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .leaderboard-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #feca57, #ff9ff3, #54a0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 35px;
+            text-align: center;
+            animation: titleShimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes titleShimmer {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin-bottom: 18px;
+            border-left: 6px solid #4ecdc4;
+            color: #ffffff;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            font-weight: 500;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .leaderboard-entry:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(10px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .start-screen {
+            text-align: center;
+        }
+
+        .name-input {
+            margin: 40px 0;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .category-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 40px 35px;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(30px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            border-radius: 25px;
+        }
+
+        .category-card:hover {
+            transform: translateY(-15px) scale(1.05);
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .category-card:hover::before {
+            opacity: 1;
+        }
+
+        .category-card.htmlcss {
+            border-color: rgba(231, 76, 60, 0.5);
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(192, 57, 43, 0.1));
+            position: relative;
+        }
+
+        .category-card.htmlcss::after {
+            content: '</>';
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 1.8rem;
+            color: rgba(231, 76, 60, 0.8);
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            animation: codeFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes codeFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .category-card.htmlcss:hover {
+            border-color: #e74c3c;
+            box-shadow: 0 20px 50px rgba(231, 76, 60, 0.4);
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.3), rgba(192, 57, 43, 0.15));
+        }
+
+        .category-card.htmlcss:hover::after {
+            color: #e74c3c;
+            animation: codeGlow 2s infinite alternate;
+        }
+
+        @keyframes codeGlow {
+            0% { text-shadow: 0 0 10px rgba(231, 76, 60, 0.5); }
+            100% { text-shadow: 0 0 25px rgba(231, 76, 60, 0.9), 0 0 40px rgba(231, 76, 60, 0.6); }
+        }
+
+        .category-icon {
+            font-size: 4rem;
+            margin-bottom: 25px;
+            display: block;
+            filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.3));
+            animation: iconFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        .category-name {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .category-description {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+            font-weight: 400;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .category-stats {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            display: inline-block;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .quiz-card {
+                padding: 30px 25px;
+            }
+            
+            .quiz-title {
+                font-size: 2.5rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="floating-shapes">
+   <div class="shape"></div>
+   <div class="shape"></div>
+   <div class="shape"></div>
+  </div>
+  <div class="container">
+   <div class="quiz-card"><!-- Start Screen -->
+    <div id="startScreen" class="start-screen">
+     <div class="quiz-header">
+      <h1 class="quiz-title">✨ Mini Quiz Hub ✨</h1>
+      <p class="welcome-text">Test your knowledge with our comprehensive quiz!</p>
+     </div>
+     <div class="name-input"><input type="text" id="playerName" class="text-input" placeholder="✨ Enter your name to begin the adventure" maxlength="30">
+     </div><button id="continueBtn" class="btn btn-primary" disabled>🚀 Choose Your Quest</button>
+    </div><!-- Category Selection Screen -->
+    <div id="categoryScreen" class="hidden">
+     <div class="quiz-header">
+      <h2 style="font-size: 2.5rem; margin-bottom: 20px; color: #ffffff;">🎯 Choose Your Challenge</h2>
+      <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 35px;">Select your domain of expertise and prove your mastery</p>
+     </div>
+     <div class="categories-grid" id="categoriesGrid"><!-- Categories will be populated by JavaScript -->
+     </div>
+     <div style="text-align: center; margin-top: 40px;"><button id="backToStartBtn" class="btn btn-secondary">← Back to Start</button>
+     </div>
+    </div><!-- Quiz Screen -->
+    <div id="quizScreen" class="hidden">
+     <div class="progress-container">
+      <div class="progress-bar">
+       <div id="progressFill" class="progress-fill"></div>
+      </div>
+      <div id="progressText" class="progress-text">
+       Question 1 of 10
+      </div>
+     </div>
+     <div class="question-container">
+      <div id="questionNumber" class="question-number">
+       Question 1
+      </div>
+      <div id="questionText" class="question-text"></div>
+      <div id="optionsContainer" class="options-container"></div>
+     </div>
+     <div class="controls">
+      <div class="timer" id="timer">
+       ⏰ Time: 30s
+      </div>
+      <div><button id="prevBtn" class="btn btn-secondary">← Previous</button> <button id="skipBtn" class="btn btn-secondary">⏭️ Skip</button> <button id="nextBtn" class="btn btn-primary" disabled>Next →</button>
+      </div>
+     </div>
+    </div><!-- Results Screen -->
+    <div id="resultsScreen" class="hidden">
+     <div class="results-container">
+      <h2 style="font-size: 2.5rem; margin-bottom: 20px;">🎉 Quest Complete! 🎉</h2>
+      <p id="completionMessage">Congratulations on completing the quiz!</p>
+      <div id="scoreDisplay" class="score-display">
+       0/10
+      </div>
+      <div class="score-breakdown">
+       <h3 style="color: #4ecdc4; margin-bottom: 25px; font-size: 1.8rem;">📊 Your Performance</h3>
+       <div id="scoreBreakdown"></div>
+      </div>
+      <div class="controls"><button id="retakeBtn" class="btn btn-secondary">🔄 Retake Quiz</button> <button id="viewLeaderboardBtn" class="btn btn-primary">🏆 View Leaderboard</button>
+      </div>
+     </div>
+    </div><!-- Leaderboard -->
+    <div id="leaderboardContainer" class="leaderboard hidden">
+     <h3 class="leaderboard-title">🏆 Hall of Champions 🏆</h3>
+     <div id="leaderboardList"></div>
+     <div style="text-align: center; margin-top: 30px;"><button id="backToResultsBtn" class="btn btn-secondary">← Back to Results</button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+        // Configuration object for Element SDK
+        const defaultConfig = {
+            quiz_title: "✨ Ultimate Quiz Challenge ✨",
+            welcome_message: "Embark on an epic journey of knowledge and discovery!",
+            completion_message: "Congratulations on completing the quiz!",
+            primary_color: "#667eea",
+            background_color: "#764ba2",
+            surface_color: "rgba(255, 255, 255, 0.1)",
+            text_color: "#ffffff",
+            accent_color: "#4ecdc4"
+        };
+
+        // Quiz categories and data
+        const quizCategories = {
+            htmlcss: {
+                name: "HTML & CSS",
+                icon: "💻",
+                description: "Web development fundamentals",
+                color: "#e74c3c",
+                questions: [
+                    {
+                        id: 1,
+                        type: "multiple",
+                        question: "Which HTML tag is used to create a hyperlink?",
+                        options: ["<link>", "<a>", "<href>", "<url>"],
+                        correct: 1,
+                        timeLimit: 30
+                    },
+                    {
+                        id: 2,
+                        type: "multiple",
+                        question: "What does CSS stand for?",
+                        options: ["Computer Style Sheets", "Creative Style Sheets", "Cascading Style Sheets", "Colorful Style Sheets"],
+                        correct: 2,
+                        timeLimit: 30
+                    },
+                    {
+                        id: 3,
+                        type: "multiple",
+                        question: "Which CSS property is used to change the text color?",
+                        options: ["text-color", "font-color", "color", "text-style"],
+                        correct: 2,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 4,
+                        type: "multiple",
+                        question: "What is the correct HTML tag for the largest heading?",
+                        options: ["<h6>", "<heading>", "<h1>", "<header>"],
+                        correct: 2,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 5,
+                        type: "multiple",
+                        question: "Which CSS property controls the spacing between elements?",
+                        options: ["padding", "margin", "spacing", "border"],
+                        correct: 1,
+                        timeLimit: 30
+                    },
+                    {
+                        id: 6,
+                        type: "multiple",
+                        question: "What is the correct HTML tag for inserting a line break?",
+                        options: ["<break>", "<lb>", "<br>", "<newline>"],
+                        correct: 2,
+                        timeLimit: 20
+                    },
+                    {
+                        id: 7,
+                        type: "multiple",
+                        question: "Which CSS property is used to make text bold?",
+                        options: ["font-weight", "text-weight", "font-style", "text-bold"],
+                        correct: 0,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 8,
+                        type: "multiple",
+                        question: "What does HTML stand for?",
+                        options: ["Hyper Text Markup Language", "Home Tool Markup Language", "Hyperlinks Text Mark Language", "Hyper Tool Markup Language"],
+                        correct: 0,
+                        timeLimit: 30
+                    }
+                ]
+            },
+            javascript: {
+                name: "JavaScript",
+                icon: "⚡",
+                description: "Programming language essentials",
+                color: "#f39c12",
+                questions: [
+                    {
+                        id: 1,
+                        type: "multiple",
+                        question: "Which method is used to add an element to the end of an array?",
+                        options: ["push()", "pop()", "shift()", "unshift()"],
+                        correct: 0,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 2,
+                        type: "multiple",
+                        question: "What does '===' operator do in JavaScript?",
+                        options: ["Assignment", "Loose equality", "Strict equality", "Not equal"],
+                        correct: 2,
+                        timeLimit: 30
+                    },
+                    {
+                        id: 3,
+                        type: "multiple",
+                        question: "Which keyword is used to declare a constant in JavaScript?",
+                        options: ["var", "let", "const", "final"],
+                        correct: 2,
+                        timeLimit: 20
+                    },
+                    {
+                        id: 4,
+                        type: "multiple",
+                        question: "What will 'typeof null' return?",
+                        options: ["null", "undefined", "object", "boolean"],
+                        correct: 2,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 5,
+                        type: "multiple",
+                        question: "Which method is used to remove the last element from an array?",
+                        options: ["pop()", "push()", "shift()", "slice()"],
+                        correct: 0,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 6,
+                        type: "multiple",
+                        question: "What is the correct way to create a function in JavaScript?",
+                        options: ["function = myFunction() {}", "function myFunction() {}", "create myFunction() {}", "def myFunction() {}"],
+                        correct: 1,
+                        timeLimit: 30
+                    },
+                    {
+                        id: 7,
+                        type: "multiple",
+                        question: "Which event occurs when the user clicks on an HTML element?",
+                        options: ["onchange", "onclick", "onmouseclick", "onmouseover"],
+                        correct: 1,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 8,
+                        type: "multiple",
+                        question: "What does JSON stand for?",
+                        options: ["JavaScript Object Notation", "Java Standard Object Notation", "JavaScript Oriented Notation", "Java Script Object Network"],
+                        correct: 0,
+                        timeLimit: 30
+                    }
+                ]
+            },
+            python: {
+                name: "Python",
+                icon: "🐍",
+                description: "Python programming basics",
+                color: "#27ae60",
+                questions: [
+                    {
+                        id: 1,
+                        type: "multiple",
+                        question: "Which function is used to output data in Python?",
+                        options: ["echo()", "print()", "output()", "display()"],
+                        correct: 1,
+                        timeLimit: 20
+                    },
+                    {
+                        id: 2,
+                        type: "multiple",
+                        question: "What is the correct file extension for Python files?",
+                        options: [".pyth", ".pt", ".py", ".python"],
+                        correct: 2,
+                        timeLimit: 20
+                    },
+                    {
+                        id: 3,
+                        type: "multiple",
+                        question: "Which operator is used for exponentiation in Python?",
+                        options: ["^", "**", "exp", "pow"],
+                        correct: 1,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 4,
+                        type: "multiple",
+                        question: "What does 'len()' function do?",
+                        options: ["Returns length", "Creates a list", "Loops through items", "Sorts items"],
+                        correct: 0,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 5,
+                        type: "multiple",
+                        question: "Which keyword is used to create a function in Python?",
+                        options: ["function", "def", "create", "func"],
+                        correct: 1,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 6,
+                        type: "multiple",
+                        question: "What is the correct way to create a list in Python?",
+                        options: ["list = (1, 2, 3)", "list = [1, 2, 3]", "list = {1, 2, 3}", "list = <1, 2, 3>"],
+                        correct: 1,
+                        timeLimit: 30
+                    },
+                    {
+                        id: 7,
+                        type: "multiple",
+                        question: "Which method is used to add an item to a list?",
+                        options: ["add()", "append()", "insert()", "push()"],
+                        correct: 1,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 8,
+                        type: "multiple",
+                        question: "What does 'import' keyword do in Python?",
+                        options: ["Creates a module", "Includes a module", "Exports a function", "Defines a class"],
+                        correct: 1,
+                        timeLimit: 30
+                    }
+                ]
+            },
+            general: {
+                name: "General Knowledge",
+                icon: "🌍",
+                description: "World facts and trivia",
+                color: "#9b59b6",
+                questions: [
+                    {
+                        id: 1,
+                        type: "multiple",
+                        question: "What is the capital of Australia?",
+                        options: ["Sydney", "Melbourne", "Canberra", "Perth"],
+                        correct: 2,
+                        timeLimit: 30
+                    },
+                    {
+                        id: 2,
+                        type: "multiple",
+                        question: "Which planet is known as the Red Planet?",
+                        options: ["Venus", "Mars", "Jupiter", "Saturn"],
+                        correct: 1,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 3,
+                        type: "multiple",
+                        question: "Who painted the Mona Lisa?",
+                        options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Michelangelo"],
+                        correct: 2,
+                        timeLimit: 30
+                    },
+                    {
+                        id: 4,
+                        type: "multiple",
+                        question: "What is the largest ocean on Earth?",
+                        options: ["Atlantic", "Indian", "Arctic", "Pacific"],
+                        correct: 3,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 5,
+                        type: "multiple",
+                        question: "In which year did World War II end?",
+                        options: ["1944", "1945", "1946", "1947"],
+                        correct: 1,
+                        timeLimit: 30
+                    },
+                    {
+                        id: 6,
+                        type: "multiple",
+                        question: "What is the smallest country in the world?",
+                        options: ["Monaco", "Nauru", "Vatican City", "San Marino"],
+                        correct: 2,
+                        timeLimit: 30
+                    },
+                    {
+                        id: 7,
+                        type: "multiple",
+                        question: "Which element has the chemical symbol 'O'?",
+                        options: ["Gold", "Oxygen", "Silver", "Iron"],
+                        correct: 1,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 8,
+                        type: "multiple",
+                        question: "How many continents are there?",
+                        options: ["5", "6", "7", "8"],
+                        correct: 2,
+                        timeLimit: 20
+                    }
+                ]
+            },
+            science: {
+                name: "Science",
+                icon: "🔬",
+                description: "Scientific facts and discoveries",
+                color: "#3498db",
+                questions: [
+                    {
+                        id: 1,
+                        type: "multiple",
+                        question: "What is the speed of light in vacuum?",
+                        options: ["300,000 km/s", "299,792,458 m/s", "186,000 miles/s", "All of the above"],
+                        correct: 3,
+                        timeLimit: 35
+                    },
+                    {
+                        id: 2,
+                        type: "multiple",
+                        question: "What is the chemical formula for water?",
+                        options: ["H2O", "CO2", "NaCl", "CH4"],
+                        correct: 0,
+                        timeLimit: 20
+                    },
+                    {
+                        id: 3,
+                        type: "multiple",
+                        question: "Which scientist developed the theory of relativity?",
+                        options: ["Isaac Newton", "Albert Einstein", "Galileo Galilei", "Stephen Hawking"],
+                        correct: 1,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 4,
+                        type: "multiple",
+                        question: "What is the hardest natural substance on Earth?",
+                        options: ["Gold", "Iron", "Diamond", "Quartz"],
+                        correct: 2,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 5,
+                        type: "multiple",
+                        question: "How many bones are in the adult human body?",
+                        options: ["206", "208", "210", "212"],
+                        correct: 0,
+                        timeLimit: 30
+                    },
+                    {
+                        id: 6,
+                        type: "multiple",
+                        question: "What gas do plants absorb from the atmosphere?",
+                        options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
+                        correct: 2,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 7,
+                        type: "multiple",
+                        question: "What is the center of an atom called?",
+                        options: ["Electron", "Proton", "Neutron", "Nucleus"],
+                        correct: 3,
+                        timeLimit: 25
+                    },
+                    {
+                        id: 8,
+                        type: "multiple",
+                        question: "Which blood type is known as the universal donor?",
+                        options: ["A", "B", "AB", "O"],
+                        correct: 3,
+                        timeLimit: 30
+                    }
+                ]
+            }
+        };
+
+        // Current quiz state
+        let selectedCategory = null;
+        let quizQuestions = [];
+
+        // Quiz state
+        let currentQuestion = 0;
+        let userAnswers = [];
+        let score = 0;
+        let playerName = "";
+        let startTime = null;
+        let questionTimer = null;
+        let timeRemaining = 0;
+        let quizData = [];
+
+        // Data SDK handler
+        const dataHandler = {
+            onDataChanged(data) {
+                quizData = data;
+                updateLeaderboard();
+            }
+        };
+
+        // Element SDK implementation
+        async function onConfigChange(config) {
+            const titleElement = document.querySelector('.quiz-title');
+            const welcomeElement = document.querySelector('.welcome-text');
+            const completionElement = document.getElementById('completionMessage');
+            
+            if (titleElement) {
+                titleElement.textContent = config.quiz_title || defaultConfig.quiz_title;
+            }
+            if (welcomeElement) {
+                welcomeElement.textContent = config.welcome_message || defaultConfig.welcome_message;
+            }
+            if (completionElement) {
+                completionElement.textContent = config.completion_message || defaultConfig.completion_message;
+            }
+
+            // Apply colors
+            const primaryColor = config.primary_color || defaultConfig.primary_color;
+            const backgroundColor = config.background_color || defaultConfig.background_color;
+            const surfaceColor = config.surface_color || defaultConfig.surface_color;
+            const textColor = config.text_color || defaultConfig.text_color;
+            const accentColor = config.accent_color || defaultConfig.accent_color;
+
+            document.body.style.background = `linear-gradient(135deg, ${primaryColor} 0%, ${backgroundColor} 50%, #f093fb 100%)`;
+            document.querySelectorAll('.quiz-card').forEach(el => el.style.background = surfaceColor);
+            document.querySelectorAll('.quiz-title, .question-text, .leaderboard-title').forEach(el => el.style.color = textColor);
+            document.querySelectorAll('.btn-primary').forEach(el => {
+                el.style.background = `linear-gradient(135deg, ${primaryColor}, ${backgroundColor})`;
+            });
+            document.querySelectorAll('.progress-fill').forEach(el => {
+                el.style.background = `linear-gradient(90deg, ${accentColor}, ${primaryColor})`;
+            });
+        }
+
+        function mapToCapabilities(config) {
+            return {
+                recolorables: [
+                    {
+                        get: () => config.primary_color || defaultConfig.primary_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ primary_color: value });
+                            }
+                        }
+                    },
+                    {
+                        get: () => config.background_color || defaultConfig.background_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ background_color: value });
+                            }
+                        }
+                    },
+                    {
+                        get: () => config.surface_color || defaultConfig.surface_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ surface_color: value });
+                            }
+                        }
+                    },
+                    {
+                        get: () => config.text_color || defaultConfig.text_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ text_color: value });
+                            }
+                        }
+                    },
+                    {
+                        get: () => config.accent_color || defaultConfig.accent_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ accent_color: value });
+                            }
+                        }
+                    }
+                ],
+                borderables: [],
+                fontEditable: undefined,
+                fontSizeable: undefined
+            };
+        }
+
+        function mapToEditPanelValues(config) {
+            return new Map([
+                ["quiz_title", config.quiz_title || defaultConfig.quiz_title],
+                ["welcome_message", config.welcome_message || defaultConfig.welcome_message],
+                ["completion_message", config.completion_message || defaultConfig.completion_message]
+            ]);
+        }
+
+        // Initialize SDKs
+        async function initializeApp() {
+            try {
+                if (window.dataSdk) {
+                    const initResult = await window.dataSdk.init(dataHandler);
+                    if (!initResult.isOk) {
+                        console.error("Failed to initialize data SDK");
+                    }
+                }
+
+                if (window.elementSdk) {
+                    window.elementSdk.init({
+                        defaultConfig,
+                        onConfigChange,
+                        mapToCapabilities,
+                        mapToEditPanelValues
+                    });
+                }
+            } catch (error) {
+                console.error("Error initializing SDKs:", error);
+            }
+        }
+
+        // Quiz functions
+        function showScreen(screenId) {
+            document.querySelectorAll('.start-screen, #categoryScreen, #quizScreen, #resultsScreen, #leaderboardContainer').forEach(screen => {
+                screen.classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        function showCategoryScreen() {
+            playerName = document.getElementById('playerName').value.trim();
+            if (!playerName) return;
+            
+            showScreen('categoryScreen');
+            populateCategories();
+        }
+
+        function populateCategories() {
+            const grid = document.getElementById('categoriesGrid');
+            grid.innerHTML = '';
+            
+            Object.keys(quizCategories).forEach(categoryKey => {
+                const category = quizCategories[categoryKey];
+                const card = document.createElement('div');
+                card.className = `category-card ${categoryKey}`;
+                card.onclick = () => selectCategory(categoryKey);
+                
+                card.innerHTML = `
+                    <span class="category-icon">${category.icon}</span>
+                    <div class="category-name">${category.name}</div>
+                    <div class="category-description">${category.description}</div>
+                    <div class="category-stats">${category.questions.length} Questions</div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function selectCategory(categoryKey) {
+            selectedCategory = categoryKey;
+            quizQuestions = quizCategories[categoryKey].questions;
+            startQuiz();
+        }
+
+        function startQuiz() {
+            if (!selectedCategory || !quizQuestions.length) return;
+
+            currentQuestion = 0;
+            userAnswers = [];
+            score = 0;
+            startTime = new Date();
+            
+            showScreen('quizScreen');
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            const question = quizQuestions[currentQuestion];
+            
+            document.getElementById('questionNumber').textContent = `Question ${currentQuestion + 1}`;
+            document.getElementById('questionText').textContent = question.question;
+            document.getElementById('progressText').textContent = `Question ${currentQuestion + 1} of ${quizQuestions.length}`;
+            
+            const progress = ((currentQuestion) / quizQuestions.length) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.textContent = option;
+                optionDiv.onclick = () => selectOption(index);
+                container.appendChild(optionDiv);
+            });
+            
+            document.getElementById('prevBtn').disabled = currentQuestion === 0;
+            document.getElementById('nextBtn').disabled = true;
+            
+            startQuestionTimer(question.timeLimit);
+        }
+
+        function selectOption(index) {
+            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelectorAll('.option')[index].classList.add('selected');
+            
+            userAnswers[currentQuestion] = index;
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function skipQuestion() {
+            userAnswers[currentQuestion] = null; // Mark as skipped
+            nextQuestion();
+        }
+
+        function startQuestionTimer(seconds) {
+            timeRemaining = seconds;
+            updateTimerDisplay();
+            
+            questionTimer = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(questionTimer);
+                    nextQuestion();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('timer').textContent = `⏰ Time: ${timeRemaining}s`;
+        }
+
+        function nextQuestion() {
+            clearInterval(questionTimer);
+            
+            if (currentQuestion < quizQuestions.length - 1) {
+                currentQuestion++;
+                displayQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                clearInterval(questionTimer);
+                currentQuestion--;
+                displayQuestion();
+                
+                // Restore previous answer
+                if (userAnswers[currentQuestion] !== null && userAnswers[currentQuestion] !== undefined) {
+                    document.querySelectorAll('.option')[userAnswers[currentQuestion]].classList.add('selected');
+                    document.getElementById('nextBtn').disabled = false;
+                }
+            }
+        }
+
+        function finishQuiz() {
+            clearInterval(questionTimer);
+            calculateScore();
+            
+            const endTime = new Date();
+            const completionTime = Math.round((endTime - startTime) / 1000);
+            
+            saveQuizResult(completionTime);
+            showResults();
+        }
+
+        function calculateScore() {
+            score = 0;
+            quizQuestions.forEach((question, index) => {
+                const userAnswer = userAnswers[index];
+                if (userAnswer !== null && userAnswer !== undefined && userAnswer === question.correct) {
+                    score++;
+                }
+            });
+        }
+
+        async function saveQuizResult(completionTime) {
+            if (!window.dataSdk || quizData.length >= 999) {
+                if (quizData.length >= 999) {
+                    showToast("🚫 Leaderboard is full! Your score won't be saved.");
+                }
+                return;
+            }
+
+            const minutes = Math.floor(completionTime / 60);
+            const seconds = completionTime % 60;
+            const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            const result = await window.dataSdk.create({
+                quiz_id: Date.now().toString(),
+                user_name: playerName,
+                score: score,
+                total_questions: quizQuestions.length,
+                completion_time: timeString,
+                answers: JSON.stringify(userAnswers)
+            });
+
+            if (!result.isOk) {
+                showToast("❌ Failed to save your score to the leaderboard.");
+            }
+        }
+
+        function showResults() {
+            document.getElementById('scoreDisplay').textContent = `${score}/${quizQuestions.length}`;
+            
+            const skippedCount = userAnswers.filter(answer => answer === null || answer === undefined).length;
+            const incorrectCount = quizQuestions.length - score - skippedCount;
+            const percentage = Math.round((score / quizQuestions.length) * 100);
+            
+            const breakdown = document.getElementById('scoreBreakdown');
+            breakdown.innerHTML = `
+                <p><strong>✅ Correct Answers:</strong> ${score}</p>
+                <p><strong>❌ Incorrect Answers:</strong> ${incorrectCount}</p>
+                <p><strong>⏭️ Skipped Questions:</strong> ${skippedCount}</p>
+                <p><strong>🎯 Accuracy:</strong> ${percentage}%</p>
+                <p><strong>🏆 Grade:</strong> ${getGrade(percentage)}</p>
+            `;
+            
+            showScreen('resultsScreen');
+        }
+
+        function getGrade(percentage) {
+            if (percentage >= 90) return '🌟 A+ Excellent!';
+            if (percentage >= 80) return '⭐ A Good Job!';
+            if (percentage >= 70) return '👍 B Well Done!';
+            if (percentage >= 60) return '👌 C Keep Trying!';
+            return '💪 D Need More Practice!';
+        }
+
+        function updateLeaderboard() {
+            const leaderboardList = document.getElementById('leaderboardList');
+            if (!leaderboardList) return;
+            
+            const sortedData = [...quizData]
+                .sort((a, b) => {
+                    if (b.score !== a.score) return b.score - a.score;
+                    return a.completion_time.localeCompare(b.completion_time);
+                })
+                .slice(0, 10);
+            
+            leaderboardList.innerHTML = '';
+            
+            if (sortedData.length === 0) {
+                leaderboardList.innerHTML = '<p style="text-align: center; color: rgba(255, 255, 255, 0.7);">🎯 No scores yet. Be the first to complete the quiz!</p>';
+                return;
+            }
+            
+            sortedData.forEach((entry, index) => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'leaderboard-entry';
+                
+                const rank = index + 1;
+                const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+                
+                entryDiv.innerHTML = `
+                    <span><strong>${medal} ${entry.user_name}</strong></span>
+                    <span>${entry.score}/${entry.total_questions} (${entry.completion_time})</span>
+                `;
+                
+                leaderboardList.appendChild(entryDiv);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 30px;
+                right: 30px;
+                background: rgba(0, 0, 0, 0.9);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 15px;
+                z-index: 1000;
+                font-size: 1rem;
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (document.body.contains(toast)) {
+                    document.body.removeChild(toast);
+                }
+            }, 4000);
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+            
+            document.getElementById('playerName').addEventListener('input', (e) => {
+                document.getElementById('continueBtn').disabled = e.target.value.trim() === '';
+            });
+            
+            document.getElementById('continueBtn').addEventListener('click', showCategoryScreen);
+            document.getElementById('backToStartBtn').addEventListener('click', () => showScreen('startScreen'));
+            document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+            document.getElementById('prevBtn').addEventListener('click', prevQuestion);
+            document.getElementById('skipBtn').addEventListener('click', skipQuestion);
+            document.getElementById('retakeBtn').addEventListener('click', () => showScreen('categoryScreen'));
+            document.getElementById('viewLeaderboardBtn').addEventListener('click', () => {
+                updateLeaderboard();
+                showScreen('leaderboardContainer');
+            });
+            document.getElementById('backToResultsBtn').addEventListener('click', () => showScreen('resultsScreen'));
+        });
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99e5776bf32a59ae',t:'MTc2MzExMjM3OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
